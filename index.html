@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Scroll Demo</title>
+    <style>
+        /* 기본 스타일 초기화 */
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Pretendard', sans-serif;
+            background-color: #111;
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        h1 { margin-bottom: 2rem; font-size: 1.5rem; color: #888; }
+
+        /* 1. 스크롤 영역 컨테이너 */
+        .marquee-wrapper {
+            width: 100%;
+            overflow: hidden; /* 영역 밖 내용 숨김 */
+            background: #222;
+            padding: 2rem 0;
+            white-space: nowrap; /* 줄바꿈 방지 */
+            position: relative;
+        }
+
+        /* 2. 실제로 움직이는 트랙 */
+        .marquee-track {
+            display: inline-block;
+            /* JS로 제어할 변수: 속도 */
+            --duration: 20s; 
+            animation: scroll var(--duration) linear infinite;
+        }
+
+        /* 스크롤 내용 아이템 스타일 */
+        .marquee-item {
+            display: inline-block;
+            font-size: 4rem;
+            font-weight: bold;
+            padding: 0 2rem;
+            color: transparent;
+            -webkit-text-stroke: 2px #fff; /* 테두리 글자 효과 */
+            transition: all 0.3s;
+        }
+        
+        /* 호버 시 스타일 (옵션) */
+        .marquee-item:hover {
+            color: #fff;
+            cursor: pointer;
+        }
+
+        /* 3. 애니메이션 정의 */
+        @keyframes scroll {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); } /* 내용의 절반(원본 길이)만큼 이동 */
+        }
+
+        /* 4. 상태 클래스 (JS로 제어) */
+        .paused {
+            animation-play-state: paused !important;
+        }
+
+        /* 데스크탑: 마우스 올리면 일시정지 */
+        .marquee-wrapper:hover .marquee-track {
+            animation-play-state: paused;
+        }
+
+        /* 5. 컨트롤 버튼 영역 */
+        .controls {
+            margin-top: 3rem;
+            display: flex;
+            gap: 1rem;
+            background: #333;
+            padding: 10px 20px;
+            border-radius: 30px;
+        }
+
+        .btn {
+            background: #fff;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.1s;
+        }
+
+        .btn:active { transform: scale(0.95); }
+        .btn-pause { background-color: #ff4757; color: white; }
+        .btn-play { background-color: #2ed573; color: white; display: none; } /* 초기엔 숨김 */
+
+    </style>
+</head>
+<body>
+
+    <h1>TEST SCROLL DEMO</h1>
+
+    <div class="marquee-wrapper">
+        <div class="marquee-track" id="track">
+            <span class="marquee-item">TEST SCROLL</span>
+            <span class="marquee-item">DEVELOPER GEMINI</span>
+            <span class="marquee-item">GITHUB PAGES</span>
+            <span class="marquee-item">WEB DESIGN</span>
+            <span class="marquee-item">INTERACTIVE</span>
+        </div>
+    </div>
+
+    <div class="controls">
+        <button class="btn" id="btn-slow">느리게 (Slow)</button>
+        <button class="btn btn-pause" id="btn-toggle">일시정지 ||</button>
+        <button class="btn" id="btn-fast">빠르게 (Fast)</button>
+    </div>
+
+    <script>
+        const track = document.getElementById('track');
+        const btnSlow = document.getElementById('btn-slow');
+        const btnFast = document.getElementById('btn-fast');
+        const btnToggle = document.getElementById('btn-toggle');
+
+        let isPaused = false;
+        let currentDuration = 20; // 초기 속도 (초 단위, 숫자가 클수록 느림)
+
+        // 1. 무한 루프를 위해 내용 복제 (Seamless Loop)
+        // 트랙의 내용을 복사해서 뒤에 한 번 더 붙여넣습니다.
+        const originalContent = track.innerHTML;
+        track.innerHTML += originalContent;
+
+        // 2. 속도 변경 함수
+        function updateSpeed(newDuration) {
+            currentDuration = newDuration;
+            track.style.setProperty('--duration', `${currentDuration}s`);
+        }
+
+        // 3. 버튼 이벤트 리스너
+        btnSlow.addEventListener('click', () => {
+            // 시간이 길어질수록 느려짐
+            if(currentDuration < 100) updateSpeed(currentDuration + 5);
+        });
+
+        btnFast.addEventListener('click', () => {
+            // 시간이 짧아질수록 빨라짐 (최소 1초 제한)
+            if(currentDuration > 2) updateSpeed(currentDuration - 5);
+        });
+
+        btnToggle.addEventListener('click', () => {
+            isPaused = !isPaused; // 상태 토글
+            
+            if (isPaused) {
+                track.classList.add('paused');
+                btnToggle.innerText = "재생 ▶";
+                btnToggle.classList.replace('btn-pause', 'btn-play');
+                // 강제 일시정지 상태이므로 CSS 호버 효과와 충돌하지 않게 처리됨
+            } else {
+                track.classList.remove('paused');
+                btnToggle.innerText = "일시정지 ||";
+                btnToggle.classList.replace('btn-play', 'btn-pause');
+            }
+        });
+
+    </script>
+</body>
+</html>
